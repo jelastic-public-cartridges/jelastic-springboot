@@ -33,6 +33,7 @@ pid_of_spring_boot() {
 }
 
 start() {
+    return 0;
     [ -e "$LOG" ] && cnt=`wc -l "$LOG" | awk '{ print $1 }'` || cnt=1
 
     echo -n $"Starting $PROJECT_NAME: "

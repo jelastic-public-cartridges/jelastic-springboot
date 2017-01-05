@@ -10,19 +10,19 @@ fi
 # the name of the project, will also be used for the war file, log file, ...
 PROJECT_NAME=springboot
 # the user which should run the service
-SERVICE_USER=root
+SERVICE_USER=jelastic
 # base directory for the spring boot jar
 SPRINGBOOTAPP_HOME=/opt/repo/versions/multiverse/ROOT
 export SPRINGBOOTAPP_HOME
 
 # the spring boot war-file
-SPRINGBOOTAPP_WAR="$SPRINGBOOTAPP_HOME/ROOT.war"
+PRINGBOOTAPP_APP="$SPRINGBOOTAPP_HOME/app.jar"
 
 # java executable for spring boot app, change if you have multiple jdks installed
 SPRINGBOOTAPP_JAVA=$JAVA_HOME/bin/java
 
 # spring boot log-file
-LOG="/opt/repo/log/springboot.log"
+LOG="/opt/repo/logs/springboot.log"
 
 LOCK="/opt/repo/lock/springboot.lock"
 
@@ -33,13 +33,14 @@ pid_of_spring_boot() {
 }
 
 start() {
-    return 0;
+#    return 0;
     [ -e "$LOG" ] && cnt=`wc -l "$LOG" | awk '{ print $1 }'` || cnt=1
 
     echo -n $"Starting $PROJECT_NAME: "
 
     cd "$SPRINGBOOTAPP_HOME"
-    su $SERVICE_USER -c "nohup $SPRINGBOOTAPP_JAVA -jar \"$SPRINGBOOTAPP_WAR\"  >> \"$LOG\" 2>&1 &"
+    [ ! -f "$SPRINGBOOTAPP_APP" ] && { echo "No application deployed"; return 0; }
+    nohup $SPRINGBOOTAPP_JAVA -jar \"$SPRINGBOOTAPP_APP\"  >> \"$LOG\" 2>&1 &
 
     while { pid_of_spring_boot > /dev/null ; } &&
         ! { tail --lines=+$cnt "$LOG" | grep -q ' Started \S+ in' ; } ; do
@@ -48,7 +49,7 @@ start() {
 
     pid_of_spring_boot > /dev/null
     RETVAL=$?
-    [ $RETVAL = 0 ] && success $"$STRING" || failure $"$STRING"
+    [ $RETVAL = 0 ] && success $"$STRING" || echo $"$STRING"
     echo
 
     [ $RETVAL = 0 ] && touch "$LOCK"
@@ -68,7 +69,7 @@ stop() {
     done
 
     [ $RETVAL = 0 ] && rm -f "$LOCK"
-    [ $RETVAL = 0 ] && success $"$STRING" || failure $"$STRING"
+    [ $RETVAL = 0 ] && success $"$STRING" || echo $"$STRING"
     echo
 }
 

@@ -8,8 +8,6 @@ for dir in logs tmp pid cache env home; do
 	mkdir -p $dir
 done
 
-rm -rf /opt/repo/home; ln -sfT /opt/repo/versions/${Version}/temp /opt/repo/home;
-
 sed -i 's/opt\/repo:\/bin\/bash/opt\/repo\/home:\/bin\/bash/g' "/etc/passwd"
 
 if [ -d "/opt/repo/.ssh" ] ; then

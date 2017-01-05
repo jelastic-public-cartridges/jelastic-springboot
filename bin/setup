@@ -1,0 +1,25 @@
+#!/bin/bash -e
+
+. /etc/jelastic/environment
+
+set -u
+
+for dir in logs tmp pid cache env home; do
+	mkdir -p $dir
+done
+
+rm -rf /opt/repo/home; ln -sfT /opt/repo/versions/${Version}/temp /opt/repo/home;
+
+sed -i 's/opt\/repo:\/bin\/bash/opt\/repo\/home:\/bin\/bash/g' "/etc/passwd"
+
+if [ -d "/opt/repo/.ssh" ] ; then
+    mv /opt/repo/.ssh /opt/repo/home/
+fi
+
+[ -f "/opt/repo/.bash_profile" ] && cp /opt/repo/.bash_profile /opt/repo/home/;
+
+[ -d "/opt/repo/logs" ] && rmdir /opt/repo/logs;
+mkdir -p /opt/repo/versions/${Version}/logs;
+ln -s /opt/repo/versions/${Version}/logs /opt/repo/logs;
+
+sed -i 's/$RUNAS/root/' /etc/rc.d/init.d/cartridge;

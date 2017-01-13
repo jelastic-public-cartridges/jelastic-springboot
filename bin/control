@@ -2,6 +2,7 @@
 #
 
 . /etc/jelastic/environment
+. /opt/repo/versions/multiverse/conf/variables.conf
 
 if [ -x /etc/rc.d/init.d/functions ]; then
 . /etc/rc.d/init.d/functions
@@ -42,7 +43,7 @@ start() {
 
     cd "$SPRINGBOOTAPP_HOME"
     [ ! -f "$SPRINGBOOTAPP_APP" ] && { echo "No application deployed"; return 0; }
-    $SPRINGBOOTAPP_JAVA -jar "$SPRINGBOOTAPP_APP" > $LOG &
+    $SPRINGBOOTAPP_JAVA -jar "$SPRINGBOOTAPP_APP" $JAVA_OPTS > $LOG &
 
     while { pid_of_spring_boot > /dev/null ; } &&
     ! pgrep java > $LOCK ; do
@@ -106,8 +107,7 @@ case "$1" in
         start
         ;;
     *)
-        echo $"Usage: $0 {start|stop|restart|status}"
-        exit 1
+        exit 0
 esac
 
 exit $RETVAL

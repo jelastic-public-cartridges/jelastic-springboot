@@ -46,6 +46,7 @@ function _deploy(){
 
     _clearCache;
     restartService ${SERVICE} > /dev/null 2>&1;
+    echo
 }
 
 function _undeploy(){

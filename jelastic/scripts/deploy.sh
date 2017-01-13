@@ -42,10 +42,13 @@ function _deploy(){
         writeJSONResponceErr "result=>4078" "message=>Error loading file from URL";
         die -q;
     }
+
+    stopService ${SERVICE} > /dev/null 2>&1;
+
     cp  ${DOWNLOADS}/${package_name} ${WEBROOT}/app.jar
 
     _clearCache;
-    restartService ${SERVICE} > /dev/null 2>&1;
+    startService ${SERVICE} > /dev/null 2>&1;
     echo
 }
 

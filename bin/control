@@ -26,6 +26,7 @@ LOG="/opt/repo/logs/springboot.log"
 
 LOCK="/opt/repo/lock/springboot.lock"
 mkdir -p "/opt/repo/lock/"
+[ -L "/opt/repo/logs" ] && {  rm "/opt/repo/logs" ; mkdir "/opt/repo/logs" ;}
 
 RETVAL=0
 

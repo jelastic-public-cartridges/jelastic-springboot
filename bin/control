@@ -12,11 +12,11 @@ PROJECT_NAME=springboot
 # the user which should run the service
 SERVICE_USER=jelastic
 # base directory for the spring boot jar
-SPRINGBOOTAPP_HOME=/opt/repo/versions/multiverse/ROOT
+SPRINGBOOTAPP_HOME=/opt/repo/versions/multiverse/APP
 export SPRINGBOOTAPP_HOME
 
 # the spring boot war-file
-PRINGBOOTAPP_APP="$SPRINGBOOTAPP_HOME/app.jar"
+SPRINGBOOTAPP_APP="$SPRINGBOOTAPP_HOME/app.jar"
 
 # java executable for spring boot app, change if you have multiple jdks installed
 SPRINGBOOTAPP_JAVA=$JAVA_HOME/bin/java
@@ -25,6 +25,7 @@ SPRINGBOOTAPP_JAVA=$JAVA_HOME/bin/java
 LOG="/opt/repo/logs/springboot.log"
 
 LOCK="/opt/repo/lock/springboot.lock"
+mkdir -p "/opt/repo/lock/"
 
 RETVAL=0
 
@@ -40,16 +41,16 @@ start() {
 
     cd "$SPRINGBOOTAPP_HOME"
     [ ! -f "$SPRINGBOOTAPP_APP" ] && { echo "No application deployed"; return 0; }
-    nohup $SPRINGBOOTAPP_JAVA -jar \"$SPRINGBOOTAPP_APP\"  >> \"$LOG\" 2>&1 &
+    $SPRINGBOOTAPP_JAVA -jar "$SPRINGBOOTAPP_APP" > $LOG &
 
     while { pid_of_spring_boot > /dev/null ; } &&
-        ! { tail --lines=+$cnt "$LOG" | grep -q ' Started \S+ in' ; } ; do
+    ! pgrep java > $LOCK ; do
         sleep 1
     done
 
     pid_of_spring_boot > /dev/null
     RETVAL=$?
-    [ $RETVAL = 0 ] && success $"$STRING" || echo $"$STRING"
+    [ $RETVAL = 0 ] && echo $"$STRING" || echo $"$STRING"
     echo
 
     [ $RETVAL = 0 ] && touch "$LOCK"
@@ -60,7 +61,8 @@ stop() {
 
     pid=`pid_of_spring_boot`
     [ -n "$pid" ] && kill $pid
-    RETVAL=$?
+    #RETVAL=$?
+    RETVAL=0
     cnt=10
     while [ $RETVAL = 0 -a $cnt -gt 0 ] &&
         { pid_of_spring_boot > /dev/null ; } ; do
@@ -69,7 +71,7 @@ stop() {
     done
 
     [ $RETVAL = 0 ] && rm -f "$LOCK"
-    [ $RETVAL = 0 ] && success $"$STRING" || echo $"$STRING"
+    [ $RETVAL = 0 ] && echo $"$STRING" || echo $"$STRING"
     echo
 }
 

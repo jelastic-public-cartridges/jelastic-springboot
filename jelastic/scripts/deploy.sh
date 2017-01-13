@@ -32,28 +32,20 @@ function _deploy(){
         echo "Wrong arguments for deploy" 1>&2;
         exit 1;
     fi
-    _clearCache; 
+    _clearCache;
     ensureFileCanBeDownloaded $package_url;
     $WGET --no-check-certificate --content-disposition --directory-prefix=${DOWNLOADS} $package_url >> $ACTIONS_LOG 2>&1 || { writeJSONResponceErr "result=>4078" "message=>Error loading file from URL"; die -q; }
     package_name=`ls ${DOWNLOADS}`;
 
-    [ ! -s "$DOWNLOADS/$package_name" ] && { 
+    [ ! -s "$DOWNLOADS/$package_name" ] && {
         rm -f ${DOWNLOADS}/${package_name};
         writeJSONResponceErr "result=>4078" "message=>Error loading file from URL";
         die -q;
     }
-    ensureFileCanBeUncompressed ${DOWNLOADS}/${package_name};
-    stopService ${SERVICE} > /dev/null 2>&1;
+    cp  ${DOWNLOADS}/${package_name} ${WEBROOT}/app.jar
 
-    if [ -e "${WEBROOT}/$context" ]
-    then 
-        rm -fr ${WEBROOT}/$context;
-    fi
-
-    ext="jar"
-
-    _clearCache; 
-    startService ${SERVICE} > /dev/null 2>&1;
+    _clearCache;
+    restartService ${SERVICE} > /dev/null 2>&1;
 }
 
 function _undeploy(){
@@ -62,10 +54,10 @@ function _undeploy(){
         echo "Wrong arguments for undeploy" 1>&2
         exit 1
     fi
-    
-    [ -f ${WEBROOT}/${context}.jar ] && rm -f ${WEBROOT}/${context}.jar
 
-}   
+    [ -f ${WEBROOT}/app.jar ] && rm -f ${WEBROOT}/app.jar
+
+}
 
 function describeDeploy(){
     echo "deploy java application \n\t\t -p \t <package URL> \n\t\t -c

@@ -2,7 +2,7 @@ Name: springboot
 Cartridge-Short-Name: SPRINGBOOT
 Display-Name: SPRINGBOOT
 Description: "Jelastic SpringBoot"
-Version: 'multiverse'
+Version: '1.x'
 License: 'OpenSource'
 License-Url: 
 Vendor: Pivotal Software

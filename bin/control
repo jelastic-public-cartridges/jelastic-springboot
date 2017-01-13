@@ -2,7 +2,7 @@
 #
 
 . /etc/jelastic/environment
-. /opt/repo/versions/multiverse/conf/variables.conf
+. /opt/repo/versions/1.x/conf/variables.conf
 
 if [ -x /etc/rc.d/init.d/functions ]; then
 . /etc/rc.d/init.d/functions
@@ -13,7 +13,7 @@ PROJECT_NAME=springboot
 # the user which should run the service
 SERVICE_USER=jelastic
 # base directory for the spring boot jar
-SPRINGBOOTAPP_HOME=/opt/repo/versions/multiverse/APP
+SPRINGBOOTAPP_HOME=/opt/repo/versions/1.x/APP
 export SPRINGBOOTAPP_HOME
 
 # the spring boot war-file

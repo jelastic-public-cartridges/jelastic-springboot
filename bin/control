@@ -16,6 +16,8 @@ SERVICE_USER=jelastic
 SPRINGBOOTAPP_HOME=/opt/repo/versions/1.x/APP
 export SPRINGBOOTAPP_HOME
 
+export BASEDIR=/opt/repo//versions/1.x/APP/report-generator
+
 # the spring boot war-file
 SPRINGBOOTAPP_APP="$SPRINGBOOTAPP_HOME/app.jar"
 
@@ -42,8 +44,9 @@ start() {
     echo -n $"Starting $PROJECT_NAME: "
 
     cd "$SPRINGBOOTAPP_HOME"
-    [ ! -f "$SPRINGBOOTAPP_APP" ] && { echo "No application deployed"; return 0; }
-    $SPRINGBOOTAPP_JAVA -jar "$SPRINGBOOTAPP_APP" $JAVA_OPTS > $LOG &
+    [ ! -f "$SPRINGBOOTAPP_APP" -a ! -L "$SPRINGBOOTAPP_APP" ] && { echo "No application deployed"; return 0; }
+    BASENAME=$(basename $SPRINGBOOTAPP_APP)
+    cd $BASEDIR && $SPRINGBOOTAPP_JAVA -jar "$BASENAME" $JAVA_OPTS > $LOG &
 
     while { pid_of_spring_boot > /dev/null ; } &&
     ! pgrep java > $LOCK ; do

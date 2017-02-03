@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-include os;
+include os, output;
 
 function _clearCache(){
         if [[ -d "$DOWNLOADS" ]]
@@ -27,6 +27,7 @@ function _clearCache(){
 
 function _deploy(){
 
+    local crt_control="/opt/repo/bin/control";
     if [[ -z "$package_url" || -z "$context" ]]
     then
         echo "Wrong arguments for deploy" 1>&2;
@@ -34,7 +35,8 @@ function _deploy(){
     fi
     _clearCache;
     ensureFileCanBeDownloaded $package_url;
-    $WGET --no-check-certificate --content-disposition --directory-prefix=${DOWNLOADS} $package_url >> $ACTIONS_LOG 2>&1 || { writeJSONResponceErr "result=>4078" "message=>Error loading file from URL"; die -q; }
+    $WGET --no-check-certificate --content-disposition --directory-prefix=${DOWNLOADS} $package_url >> $ACTIONS_LOG 2>&1 || { writeJSONResponceErr "result=>4078" "message=>Error loading file from URL"; di
+e -q; }
     package_name=`ls ${DOWNLOADS}`;
 
     [ ! -s "$DOWNLOADS/$package_name" ] && {
@@ -45,12 +47,21 @@ function _deploy(){
 
     stopService ${SERVICE} > /dev/null 2>&1;
 
-    cp  ${DOWNLOADS}/${package_name} ${WEBROOT}/app.jar
+    local jar_entry=$(unzip  -Z1 ${DOWNLOADS}/${package_name}   | grep ".jar" | head -1 );
+    [ ! -z $jar_entry ]  && {
+            unzip -o "$DOWNLOADS/$package_name" -d "${WEBROOT}" 2>>$ACTIONS_LOG 1>/dev/null;
+        BASEDIR=$(dirname "${WEBROOT}/${jar_entry}");
+        sed -i "s@export BASEDIR=.*@export BASEDIR=$BASEDIR@" $crt_control;
+        ln -sf "${WEBROOT}/${jar_entry}" ${BASEDIR}/app.jar
+                            } || {
+             cp  ${DOWNLOADS}/${package_name} ${WEBROOT}/app.jar && writeJSONResponceErr "result=>0" "message=>Application deployed succesfully";
+        }
 
     _clearCache;
     startService ${SERVICE} > /dev/null 2>&1;
     echo
 }
+
 
 function _undeploy(){
     if [[ -z "$context" ]]
@@ -59,7 +70,7 @@ function _undeploy(){
         exit 1
     fi
 
-    [ -f ${WEBROOT}/app.jar ] && rm -f ${WEBROOT}/app.jar
+    [ -f ${WEBROOT}/app.jar -o -L ${WEBROOT}/app.jar  ] && rm -f ${WEBROOT}/* && { "result=>0" "message=>Application undeployed succesfully" ;}  || { writeJSONResponceErr "result=>4060" "message=>Undeploy failed"; exit 1; }
 
 }
 

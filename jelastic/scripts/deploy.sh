@@ -35,29 +35,30 @@ function _deploy(){
     fi
     _clearCache;
     ensureFileCanBeDownloaded $package_url;
-    $WGET --no-check-certificate --content-disposition --directory-prefix=${DOWNLOADS} $package_url >> $ACTIONS_LOG 2>&1 || { writeJSONResponceErr "result=>4078" "message=>Error loading file from URL"; di
+    $WGET --no-check-certificate --content-disposition --directory-prefix=${DOWNLOADS} $package_url >> $ACTIONS_LOG 2>&1 || { writeJSONResponseErr "result=>4078" "message=>Error loading file from URL"; di
 e -q; }
     package_name=`ls ${DOWNLOADS}`;
 
     [ ! -s "$DOWNLOADS/$package_name" ] && {
         rm -f ${DOWNLOADS}/${package_name};
-        writeJSONResponceErr "result=>4078" "message=>Error loading file from URL";
+        writeJSONResponseErr "result=>4078" "message=>Error loading file from URL";
         die -q;
     }
 
     stopService ${SERVICE} > /dev/null 2>&1;
 
-    local jar_entry=$(unzip  -Z1 ${DOWNLOADS}/${package_name}   | grep ".jar" | head -1 );
-    [ ! -z $jar_entry ]  && {
-            unzip -o "$DOWNLOADS/$package_name" -d "${WEBROOT}" 2>>$ACTIONS_LOG 1>/dev/null;
+    unzip  -Z1 ${DOWNLOADS}/${package_name} |  grep -q "META-INF/MANIFEST.MF" && {
+    BASEDIR=""
+    cp  ${DOWNLOADS}/${package_name} ${WEBROOT}/app.jar && writeJSONResponseOut "result=>0" "message=>Application deployed succesfully";
+         } ||  local jar_entry=$(unzip  -Z1 ${DOWNLOADS}/${package_name}   | grep ".jar" | head -1 );
+        [ ! -z $jar_entry ]  && {
+         unzip -o "$DOWNLOADS/$package_name" -d "${WEBROOT}" 2>>$ACTIONS_LOG 1>/dev/null;
         BASEDIR=$(dirname "${WEBROOT}/${jar_entry}");
-        sed -i "s@export BASEDIR=.*@export BASEDIR=$BASEDIR@" $crt_control;
-        ln -sf "${WEBROOT}/${jar_entry}" ${BASEDIR}/app.jar
-                            } || {
-             cp  ${DOWNLOADS}/${package_name} ${WEBROOT}/app.jar && writeJSONResponceErr "result=>0" "message=>Application deployed succesfully";
-        }
-
-    _clearCache;
+        ln -sf "${WEBROOT}/${jar_entry}" ${BASEDIR}/app.jar  && writeJSONResponseOut "result=>0" "message=>Application deployed succesfully";
+          cp  ${DOWNLOADS}/${package_name} ${WEBROOT}/app.jar && writeJSONResponseOut "result=>0" "message=>Application deployed succesfully";
+                            } || writeJSONResponseErr "result=>4060" "message=>Application deployed with error";
+    sed -i "s@export BASEDIR=.*@export BASEDIR=$BASEDIR@" $crt_control;
+    clearCache;
     startService ${SERVICE} > /dev/null 2>&1;
     echo
 }
@@ -70,7 +71,7 @@ function _undeploy(){
         exit 1
     fi
 
-    [ -f ${WEBROOT}/app.jar -o -L ${WEBROOT}/app.jar  ] && rm -f ${WEBROOT}/* && { "result=>0" "message=>Application undeployed succesfully" ;}  || { writeJSONResponceErr "result=>4060" "message=>Undeploy failed"; exit 1; }
+    [ ! -z "${WEBROOT}" ] && rm -rf ${WEBROOT}/* && { writeJSONResponseOut  "result=>0" "message=>Application undeployed succesfully";  exit 0 ;}  || { writeJSONResponseErr "result=>4060" "message=>Undeploy failed"; exit 1; }
 
 }
 

@@ -46,7 +46,7 @@ start() {
     BASENAME=$(basename $SPRINGBOOTAPP_APP)
     [ ! -f "$SPRINGBOOTAPP_APP" -a ! -L "$SPRINGBOOTAPP_APP" ] && { echo "No application deployed"; return 0; }
     [ ! -z $BASEDIR ] && APP_HOME=$BASEDIR || APP_HOME=$SPRINGBOOTAPP_HOME
-    cd $APP_HOME && pwd &&  $SPRINGBOOTAPP_JAVA -jar "$BASENAME" $JAVA_OPTS > $LOG &
+    cd $APP_HOME && pwd &&  $SPRINGBOOTAPP_JAVA -jar "$BASENAME" $JAVA_OPTS > $LOG 2>&1 &
 
     while { pid_of_spring_boot > /dev/null ; } &&
     ! pgrep java > $LOCK ; do

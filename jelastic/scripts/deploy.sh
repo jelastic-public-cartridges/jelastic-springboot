@@ -71,6 +71,8 @@ function _undeploy(){
         exit 1
     fi
 
+    stopService ${SERVICE} > /dev/null 2>&1;
+
     [ ! -z "${WEBROOT}" ] && rm -rf ${WEBROOT}/* && { writeJSONResponseOut  "result=>0" "message=>Application undeployed succesfully";  exit 0 ;}  || { writeJSONResponseErr "result=>4060" "message=>Undeploy failed"; exit 1; }
 
 }

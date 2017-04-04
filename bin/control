@@ -18,8 +18,10 @@ export SPRINGBOOTAPP_HOME
 
 export BASEDIR=
 
-# the spring boot war-file
-[ -z $BASEDIR ] && SPRINGBOOTAPP_APP="$SPRINGBOOTAPP_HOME/app.jar" || SPRINGBOOTAPP_APP="$BASEDIR/app.jar";
+[ -z $BASEDIR ] && DIR_TO_SEARCH=$SPRINGBOOTAPP_HOME || DIR_TO_SEARCH=$BASEDIR
+
+JARFILE_NAME=$(basename $(ls $DIR_TO_SEARCH/*.jar) | head -n 1);
+[ ! -z $JARFILE_NAME ] && SPRINGBOOTAPP_APP="$DIR_TO_SEARCH/$JARFILE_NAME"
 
 # java executable for spring boot app, change if you have multiple jdks installed
 SPRINGBOOTAPP_JAVA=/usr/bin/java

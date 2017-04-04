@@ -49,14 +49,12 @@ e -q; }
 
     unzip  -Z1 ${DOWNLOADS}/${package_name} |  grep -q "META-INF/MANIFEST.MF" && {
     BASEDIR=""
-    cp  ${DOWNLOADS}/${package_name} ${WEBROOT}/app.jar && writeJSONResponseOut "result=>0" "message=>Application deployed succesfully";
+    cp  ${DOWNLOADS}/${package_name} ${WEBROOT}/${package_name} && writeJSONResponseOut "result=>0" "message=>Application deployed succesfully";
          } ||  local jar_entry=$(unzip  -Z1 ${DOWNLOADS}/${package_name}   | grep ".jar" | head -1 );
         [ ! -z $jar_entry ]  && {
          unzip -o "$DOWNLOADS/$package_name" -d "${WEBROOT}" 2>>$ACTIONS_LOG 1>/dev/null;
-        BASEDIR=$(dirname "${WEBROOT}/${jar_entry}");
-        ln -sf "${WEBROOT}/${jar_entry}" ${BASEDIR}/app.jar  && writeJSONResponseOut "result=>0" "message=>Application deployed succesfully";
-          cp  ${DOWNLOADS}/${package_name} ${WEBROOT}/app.jar && writeJSONResponseOut "result=>0" "message=>Application deployed succesfully";
-                            } || writeJSONResponseErr "result=>4060" "message=>Application deployed with error";
+        BASEDIR=$(dirname "${WEBROOT}/${jar_entry}"); 
+                                } || writeJSONResponseErr "result=>4060" "message=>Application deployed with error";
     sed -i "s@export BASEDIR=.*@export BASEDIR=$BASEDIR@" $crt_control;
     clearCache;
     startService ${SERVICE} > /dev/null 2>&1;

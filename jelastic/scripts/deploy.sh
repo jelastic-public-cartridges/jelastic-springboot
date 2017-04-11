@@ -49,6 +49,7 @@ e -q; }
 
     unzip  -Z1 ${DOWNLOADS}/${package_name} |  grep -q "META-INF/MANIFEST.MF" && {
     BASEDIR=""
+    _undeploy;
     cp  ${DOWNLOADS}/${package_name} ${WEBROOT}/${package_name} && writeJSONResponseOut "result=>0" "message=>Application deployed succesfully";
          } ||  local jar_entry=$(unzip  -Z1 ${DOWNLOADS}/${package_name}   | grep ".jar\|.war" | head -1 );
         [ ! -z $jar_entry ]  && {
@@ -57,17 +58,18 @@ e -q; }
                                 } || writeJSONResponseErr "result=>4060" "message=>Application deployed with error";
     sed -i "s@export BASEDIR=.*@export BASEDIR=$BASEDIR@" $crt_control;
     clearCache;
+    chown -R 700:700 "${WEBROOT}" 
     startService ${SERVICE} > /dev/null 2>&1;
     echo
 }
 
 
 function _undeploy(){
-    if [[ -z "$context" ]]
-    then
-        echo "Wrong arguments for undeploy" 1>&2
-        exit 1
-    fi
+#    if [[ -z "$context" ]]
+#    then
+#        echo "Wrong arguments for undeploy" 1>&2
+#        exit 1
+#    fi
 
     stopService ${SERVICE} > /dev/null 2>&1;
 

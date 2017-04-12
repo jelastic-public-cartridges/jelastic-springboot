@@ -53,6 +53,7 @@ function _deploy(){
     }
     _clearCache;
     chown -R 700:700 "${WEBROOT}"
+    chown -R 700:700 "/opt/repo/logs"
     startService ${SERVICE} > /dev/null 2>&1;
     writeJSONResponseOut "result=>0" "message=>Application deployed succesfully";
     echo

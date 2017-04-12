@@ -44,15 +44,14 @@ function _deploy(){
         die -q;
     }
 
-    stopService ${SERVICE} > /dev/null 2>&1;
+    _undeploy;
 
     unzip  -Z1 ${DOWNLOADS}/${package_name} |  grep -q "META-INF/MANIFEST.MF" && {
-    _undeploy;
     cp  ${DOWNLOADS}/${package_name} ${WEBROOT}/${package_name}; } ||  local jar_entry=$(unzip  -Z1 ${DOWNLOADS}/${package_name}   | grep ".jar\|.war\.ear" | head -1 );
         [ ! -z $jar_entry ]  && {
         unzip -o "$DOWNLOADS/$package_name" -d "${WEBROOT}" 2>>$ACTIONS_LOG 1>/dev/null || writeJSONResponseErr "result=>4060" "message=>Application deployed with error";
     }
-    clearCache;
+    _clearCache;
     chown -R 700:700 "${WEBROOT}" 
     startService ${SERVICE} > /dev/null 2>&1;
     writeJSONResponseOut "result=>0" "message=>Application deployed succesfully";

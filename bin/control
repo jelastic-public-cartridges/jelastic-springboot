@@ -16,10 +16,17 @@ SERVICE_USER=jelastic
 SPRINGBOOTAPP_HOME=/opt/repo/versions/1.x/APP
 export SPRINGBOOTAPP_HOME
 
-DIR_TO_SEARCH=$SPRINGBOOTAPP_HOME 
+DIR_TO_SEARCH=$SPRINGBOOTAPP_HOME
 
-JARFILE_NAME=$(basename $(ls $SPRINGBOOTAPP_HOME/*.{j,w,e}ar) 2>/dev/null | head -n 1);
-[ ! -z $JARFILE_NAME ] && SPRINGBOOTAPP_APP="$DIR_TO_SEARCH/$JARFILE_NAME"
+#FATJAR_FILE
+JARFILE_NAME=$(basename $(ls $SPRINGBOOTAPP_HOME/*.{j,w,e}ar 2>/dev/null | head -n 1) 2>/dev/null );
+
+#PACKAGE
+[ -z $JARFILE_NAME ] && JARFILE_NAME=$( cd $SPRINGBOOTAPP_HOME && find . -name '*.jar')
+
+[ -z $JARFILE_NAME ] && echo "Error: Nothing to run" && exit 1
+
+JARFILE_FULLPATH=$SPRINGBOOTAPP_HOME/$JARFILE_NAME
 
 # java executable for spring boot app, change if you have multiple jdks installed
 SPRINGBOOTAPP_JAVA=/usr/bin/java
@@ -43,10 +50,8 @@ start() {
 
     echo -n $"Starting $PROJECT_NAME: "
 
-    BASENAME=$(basename $SPRINGBOOTAPP_APP)
-    [ ! -f "$SPRINGBOOTAPP_APP" -a ! -L "$SPRINGBOOTAPP_APP" ] && { echo "No application deployed"; return 0; }
-    APP_HOME=$SPRINGBOOTAPP_HOME
-    cd SPRINGBOOTAPP_HOME && $SPRINGBOOTAPP_JAVA -jar $JARFILE_NAME $JAVA_OPTS > $LOG 2>&1 &
+    [ ! -f "$JARFILE_FULLPATH" -a ! -L "$JARFILE_FULLPATH" ] && { echo "No application deployed"; return 0; }
+    cd $SPRINGBOOTAPP_HOME && $SPRINGBOOTAPP_JAVA -jar $JARFILE_NAME $JAVA_OPTS > $LOG 2>&1 &
 
     while { pid_of_spring_boot > /dev/null ; } &&
     ! pgrep java > $LOCK ; do
@@ -55,10 +60,7 @@ start() {
 
     pid_of_spring_boot > /dev/null
     RETVAL=$?
-    [ $RETVAL = 0 ] && echo $"$STRING" || echo $"$STRING"
-    echo
-
-    [ $RETVAL = 0 ] && touch "$LOCK"
+    [ $RETVAL = 0 ] && { touch "$LOCK" && echo " [  OK  ]" || echo " [  FAIL  ]" ; }
 }
 
 stop() {
@@ -75,8 +77,7 @@ stop() {
             ((cnt--))
     done
 
-    [ $RETVAL = 0 ] && rm -f "$LOCK"
-    [ $RETVAL = 0 ] && echo $"$STRING" || echo $"$STRING"
+    [ $RETVAL = 0 ] && { rm -f "$LOCK" && echo " [  OK  ]" ; } || echo " [  FAIL  ]"
     return $RETVAL
 }
 

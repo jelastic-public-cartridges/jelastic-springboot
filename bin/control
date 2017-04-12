@@ -16,11 +16,9 @@ SERVICE_USER=jelastic
 SPRINGBOOTAPP_HOME=/opt/repo/versions/1.x/APP
 export SPRINGBOOTAPP_HOME
 
-export BASEDIR=
+DIR_TO_SEARCH=$SPRINGBOOTAPP_HOME 
 
-[ -z $BASEDIR ] && DIR_TO_SEARCH=$SPRINGBOOTAPP_HOME || DIR_TO_SEARCH=$BASEDIR
-
-JARFILE_NAME=$(basename $(ls $DIR_TO_SEARCH/*.{j,w}ar) 2>/dev/null | head -n 1);
+JARFILE_NAME=$(basename $(ls $SPRINGBOOTAPP_HOME/*.{j,w,e}ar) 2>/dev/null | head -n 1);
 [ ! -z $JARFILE_NAME ] && SPRINGBOOTAPP_APP="$DIR_TO_SEARCH/$JARFILE_NAME"
 
 # java executable for spring boot app, change if you have multiple jdks installed
@@ -47,8 +45,8 @@ start() {
 
     BASENAME=$(basename $SPRINGBOOTAPP_APP)
     [ ! -f "$SPRINGBOOTAPP_APP" -a ! -L "$SPRINGBOOTAPP_APP" ] && { echo "No application deployed"; return 0; }
-    [ ! -z $BASEDIR ] && APP_HOME=$BASEDIR || APP_HOME=$SPRINGBOOTAPP_HOME
-    cd $APP_HOME && pwd &&  $SPRINGBOOTAPP_JAVA -jar "$BASENAME" $JAVA_OPTS > $LOG 2>&1 &
+    APP_HOME=$SPRINGBOOTAPP_HOME
+    cd SPRINGBOOTAPP_HOME && $SPRINGBOOTAPP_JAVA -jar $JARFILE_NAME $JAVA_OPTS > $LOG 2>&1 &
 
     while { pid_of_spring_boot > /dev/null ; } &&
     ! pgrep java > $LOCK ; do

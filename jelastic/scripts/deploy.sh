@@ -35,8 +35,7 @@ function _deploy(){
     fi
     _clearCache;
     ensureFileCanBeDownloaded $package_url;
-    $WGET --no-check-certificate --content-disposition --directory-prefix=${DOWNLOADS} $package_url >> $ACTIONS_LOG 2>&1 || { writeJSONResponseErr "result=>4078" "message=>Error loading file from URL"; di
-e -q; }
+    $WGET --no-check-certificate --content-disposition --directory-prefix=${DOWNLOADS} $package_url >> $ACTIONS_LOG 2>&1 || { writeJSONResponseErr "result=>4078" "message=>Error loading file from URL"; die -q; }
     package_name=`ls ${DOWNLOADS}`;
 
     [ ! -s "$DOWNLOADS/$package_name" ] && {
@@ -48,18 +47,15 @@ e -q; }
     stopService ${SERVICE} > /dev/null 2>&1;
 
     unzip  -Z1 ${DOWNLOADS}/${package_name} |  grep -q "META-INF/MANIFEST.MF" && {
-    BASEDIR=""
     _undeploy;
-    cp  ${DOWNLOADS}/${package_name} ${WEBROOT}/${package_name} && writeJSONResponseOut "result=>0" "message=>Application deployed succesfully";
-         } ||  local jar_entry=$(unzip  -Z1 ${DOWNLOADS}/${package_name}   | grep ".jar\|.war" | head -1 );
+    cp  ${DOWNLOADS}/${package_name} ${WEBROOT}/${package_name}; } ||  local jar_entry=$(unzip  -Z1 ${DOWNLOADS}/${package_name}   | grep ".jar\|.war\.ear" | head -1 );
         [ ! -z $jar_entry ]  && {
-         unzip -o "$DOWNLOADS/$package_name" -d "${WEBROOT}" 2>>$ACTIONS_LOG 1>/dev/null;
-        BASEDIR=$(dirname "${WEBROOT}/${jar_entry}"); 
-                                } || writeJSONResponseErr "result=>4060" "message=>Application deployed with error";
-    sed -i "s@export BASEDIR=.*@export BASEDIR=$BASEDIR@" $crt_control;
+        unzip -o "$DOWNLOADS/$package_name" -d "${WEBROOT}" 2>>$ACTIONS_LOG 1>/dev/null || writeJSONResponseErr "result=>4060" "message=>Application deployed with error";
+    }
     clearCache;
     chown -R 700:700 "${WEBROOT}" 
     startService ${SERVICE} > /dev/null 2>&1;
+    writeJSONResponseOut "result=>0" "message=>Application deployed succesfully";
     echo
 }
 

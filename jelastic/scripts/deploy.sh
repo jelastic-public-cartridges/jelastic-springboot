@@ -26,7 +26,6 @@ function _clearCache(){
 }
 
 function _deploy(){
-
     local crt_control="/opt/repo/bin/control";
     if [[ -z "$package_url" || -z "$context" ]]
     then
@@ -44,7 +43,8 @@ function _deploy(){
         die -q;
     }
 
-    _undeploy;
+    stopService ${SERVICE} > /dev/null 2>&1;
+    rm -rf ${WEBROOT}/*
 
     unzip  -Z1 ${DOWNLOADS}/${package_name} |  grep -q "META-INF/MANIFEST.MF" && {
     cp  ${DOWNLOADS}/${package_name} ${WEBROOT}/${package_name}; } ||  local jar_entry=$(unzip  -Z1 ${DOWNLOADS}/${package_name}   | grep ".jar\|.war\.ear" | head -1 );
@@ -52,12 +52,11 @@ function _deploy(){
         unzip -o "$DOWNLOADS/$package_name" -d "${WEBROOT}" 2>>$ACTIONS_LOG 1>/dev/null || writeJSONResponseErr "result=>4060" "message=>Application deployed with error";
     }
     _clearCache;
-    chown -R 700:700 "${WEBROOT}" 
+    chown -R 700:700 "${WEBROOT}"
     startService ${SERVICE} > /dev/null 2>&1;
     writeJSONResponseOut "result=>0" "message=>Application deployed succesfully";
     echo
 }
-
 
 function _undeploy(){
 #    if [[ -z "$context" ]]

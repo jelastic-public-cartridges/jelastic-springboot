@@ -5,7 +5,7 @@ Description: "Jelastic SpringBoot"
 Version: '1.x'
 License: 'OpenSource'
 License-Url: 
-Vendor: Pivotal Software
+Vendor: Jelastic
 Cartridge-Version: 1.0
 Cartridge-Vendor: Jelastic
 Categories:

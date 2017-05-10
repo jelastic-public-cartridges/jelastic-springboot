@@ -1,0 +1,6 @@
+### backwards compartiblity fix for older jem, can be removed later ###
+sed -i 's/.x_/.x-/g' /etc/jelastic/environment /opt/repo/metadata/manifest.sh /opt/repo/.profile;
+source /opt/repo/.profile;
+rm -rf /opt/repo/versions/1.x_2.x/ ;
+ln -sf /opt/repo/versions/1.x-2.x /opt/SpringBoot;
+#######################################################################

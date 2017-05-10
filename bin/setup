@@ -2,6 +2,11 @@
 
 wget 'https://raw.githubusercontent.com/jelastic/jem/master/usr/lib/jelastic/libs/cartridge-common.lib' -O /usr/lib/jelastic/libs/cartridge-common.lib
 
+sed -i 's/.x_/.x-/g' /etc/jelastic/environment; 
+sed -i 's/.x_/.x-/g' /opt/repo/metadata/manifest.sh; 
+sed -i 's/.x_/.x-/g' /opt/repo/.profile
+rm -rf /opt/repo/versions/1.x_2.x/
+
 . /etc/jelastic/environment
 
 set -u

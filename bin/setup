@@ -9,6 +9,7 @@ for dir in logs tmp pid cache env home; do
 done
 
 sed -i 's/opt\/repo:\/bin\/bash/opt\/repo\/home:\/bin\/bash/g' "/etc/passwd"
+sed -i 's/.x_/.x-/g' /etc/jelastic/environment /opt/repo/metadata/manifest.sh /opt/repo/.profile;
 
 if [ -d "/opt/repo/.ssh" ] ; then
     mv /opt/repo/.ssh /opt/repo/home/

@@ -2,6 +2,9 @@
 
 . /etc/jelastic/environment
 
+prestart_script="/opt/repo/.openshift/action_hooks/pre_start_SpringBoot"
+[ -f "$prestart_script" ] && $prestart_script
+
 set -u
 
 for dir in logs tmp pid cache env home; do

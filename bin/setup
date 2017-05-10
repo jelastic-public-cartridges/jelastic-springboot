@@ -7,7 +7,7 @@
 #[ -f "$prestart_script" ] && $prestart_script
 ### required for jem backwards compability
 #sed -i -e "/profile/a\/opt/repo/.openshift/action_hooks/pre_start_SpringBoot" /usr/lib/jelastic/libs/cartridge-common.lib 
-chown 700:700 /etc/jelastic/environment
+chown 700:700 -R /etc/jelastic
 chown 700:700 -R /opt
 ##########################################
 

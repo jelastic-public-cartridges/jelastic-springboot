@@ -16,18 +16,11 @@
 
 include os, output;
 
-### backwards compartiblity fix for older jem, can be removed later ###
-$SED -i 's/.x_/.x-/g' /etc/jelastic/environment /opt/repo/metadata/manifest.sh /opt/repo/.profile;
-source /opt/repo/.profile;
-ln -sf /opt/repo/versions/1.x-2.x /opt/SpringBoot;
-#######################################################################
-
 function _clearCache(){
         if [[ -d "$DOWNLOADS" ]]
         then
                 shopt -s dotglob;
                 rm -Rf ${DOWNLOADS}/*;
-                rm -rf /opt/repo/versions/1.x_2.x/ ;
                 shopt -u dotglob;
         fi
 }

@@ -35,6 +35,7 @@ function _deploy(){
     fi
     _clearCache;
     $SED -i 's/.x_/.x-/g' /etc/jelastic/environment /opt/repo/metadata/manifest.sh /opt/repo/.profile;
+    source /opt/repo/.profile;
     ensureFileCanBeDownloaded $package_url;
     $WGET --no-check-certificate --content-disposition --directory-prefix=${DOWNLOADS} $package_url >> $ACTIONS_LOG 2>&1 || { writeJSONResponseErr "result=>4078" "message=>Error loading file from URL"; die -q; }
     package_name=`ls ${DOWNLOADS}`;

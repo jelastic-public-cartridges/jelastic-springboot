@@ -1,5 +1,6 @@
 #!/bin/sh
 #
+/opt/repo/.openshift/action_hooks/pre_start_SpringBoot
 
 . /etc/jelastic/environment
 . /opt/repo/versions/1.x-2.x/conf/variables.conf

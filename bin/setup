@@ -8,6 +8,7 @@ chown 700:700 -R /opt
 ##########################################
 
 set -u
+cd /opt/repo
 
 for dir in logs tmp pid cache env home; do
 	mkdir -p $dir

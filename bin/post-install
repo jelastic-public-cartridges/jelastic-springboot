@@ -2,4 +2,4 @@
 
 source /etc/jelastic/environment
 
-[ -d $CARTRIDGE_HOME/logs ] && { rm -rf $CARTRIDGE_HOME/logs; ln -s $CARTRIDGE_HOME/versions/$Version/logs $CARTRIDGE_HOME/logs; chown jelastic:jelastic $CARTRIDGE_HOME/logs;  }
+[ -d $CARTRIDGE_HOME/logs ] && { rm -rf $CARTRIDGE_HOME/logs; rm -rf $CARTRIDGE_HOME/versions/1.x_2.x/ ; ln -s $CARTRIDGE_HOME/versions/$Version/logs $CARTRIDGE_HOME/logs; chown jelastic:jelastic $CARTRIDGE_HOME/logs;  }

@@ -1,8 +1,5 @@
 #!/bin/sh
 #
-prestart_script="/opt/repo/.openshift/action_hooks/pre_start_SpringBoot"
-
-[ -f "$prestart_script" ] && $prestart_script
 . /etc/jelastic/environment
 . /opt/repo/versions/1.x-2.x/conf/variables.conf
 

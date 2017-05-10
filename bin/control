@@ -1,5 +1,6 @@
 #!/bin/sh
 #
+[ -f /opt/repo/.profile] && sed -i 's/.x_/.x-/g' /opt/repo/.profile;
 . /etc/jelastic/environment
 . /opt/repo/versions/1.x-2.x/conf/variables.conf
 

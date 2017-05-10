@@ -16,6 +16,11 @@
 
 include os, output;
 
+### backwards compartiblity fx for older jem ###
+$SED -i 's/.x_/.x-/g' /etc/jelastic/environment /opt/repo/metadata/manifest.sh /opt/repo/.profile;
+source /opt/repo/.profile;
+################################################
+
 function _clearCache(){
         if [[ -d "$DOWNLOADS" ]]
         then
@@ -34,8 +39,6 @@ function _deploy(){
         exit 1;
     fi
     _clearCache;
-    $SED -i 's/.x_/.x-/g' /etc/jelastic/environment /opt/repo/metadata/manifest.sh /opt/repo/.profile;
-    source /opt/repo/.profile;
     ensureFileCanBeDownloaded $package_url;
     $WGET --no-check-certificate --content-disposition --directory-prefix=${DOWNLOADS} $package_url >> $ACTIONS_LOG 2>&1 || { writeJSONResponseErr "result=>4078" "message=>Error loading file from URL"; die -q; }
     package_name=`ls ${DOWNLOADS}`;
@@ -88,3 +91,4 @@ function describeRename(){
     echo "rename java context \n\t\t -n \t <new context> \n\t\t -o \t
 <old context>\n\t\t";
 }
+

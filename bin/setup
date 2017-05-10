@@ -2,8 +2,12 @@
 
 . /etc/jelastic/environment
 
-prestart_script="/opt/repo/.openshift/action_hooks/pre_start_SpringBoot"
-[ -f "$prestart_script" ] && $prestart_script
+#prestart_script="/opt/repo/.openshift/action_hooks/pre_start_SpringBoot"
+#[ -f "$prestart_script" ] && $prestart_script
+
+### required for jem backwards compability
+sed -e "/configureEnvironment/a\/opt/repo/.openshift/action_hooks/pre_start_SpringBoot" /usr/lib/jelastic/modules/cartridge.module
+##########################################
 
 set -u
 

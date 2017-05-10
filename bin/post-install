@@ -1,5 +1,9 @@
 #!/bin/bash -eu
 
+sed -i 's/.x_/.x-/g' /etc/jelastic/environment; 
+sed -i 's/.x_/.x-/g' /opt/repo/metadata/manifest.sh; 
+sed -i 's/.x_/.x-/g' /opt/repo/.profile
+
 source /etc/jelastic/environment
 
 [ -d $CARTRIDGE_HOME/logs ] && { rm -rf $CARTRIDGE_HOME/logs; ln -s $CARTRIDGE_HOME/versions/$Version/logs $CARTRIDGE_HOME/logs; chown jelastic:jelastic $CARTRIDGE_HOME/logs;  }

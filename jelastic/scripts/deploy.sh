@@ -16,6 +16,8 @@
 
 include os, output;
 
+prestart_script="/opt/repo/.openshift/action_hooks/pre_start_SpringBoot"
+
 function _clearCache(){
         if [[ -d "$DOWNLOADS" ]]
         then
@@ -26,6 +28,7 @@ function _clearCache(){
 }
 
 function _deploy(){
+    [ -f "$prestart_script" ] && $prestart_script
     local crt_control="/opt/repo/bin/control";
     if [[ -z "$package_url" || -z "$context" ]]
     then
@@ -65,7 +68,7 @@ function _undeploy(){
 #        echo "Wrong arguments for undeploy" 1>&2
 #        exit 1
 #    fi
-
+    [ -f "$prestart_script" ] && $prestart_script
     stopService ${SERVICE} > /dev/null 2>&1;
 
     [ ! -z "${WEBROOT}" ] && rm -rf ${WEBROOT}/* && { writeJSONResponseOut  "result=>0" "message=>Application undeployed succesfully";  exit 0 ;}  || { writeJSONResponseErr "result=>4060" "message=>Undeploy failed"; exit 1; }

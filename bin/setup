@@ -3,8 +3,7 @@
 . /etc/jelastic/environment
 
 ### required for jem backwards compability
-chown 700:700 -R /etc/jelastic
-chown 700:700 -R /opt
+chown 700:700  /opt /opt/SpringBoot /etc/jelastic /etc/jelastic/environment
 ##########################################
 
 set -u

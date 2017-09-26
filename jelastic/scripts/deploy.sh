@@ -16,7 +16,7 @@
 
 include os, output;
 
-prestart_script="/opt/repo/.openshift/action_hooks/pre_start_SpringBoot"
+# prestart_script="${STACK_PATH}.openshift/action_hooks/pre_start_SpringBoot"
 
 function _clearCache(){
         if [[ -d "$DOWNLOADS" ]]
@@ -27,36 +27,46 @@ function _clearCache(){
         fi
 }
 
-function _deploy(){
+function getPackageName() {
+    if [ -f "$package_url" ]; then
+        package_name="$package_url";
+    elif [[ "${package_url}" =~ file://* ]]; then
+        package_name="${package_url:7}"
+        [ -f "$package_name" ] || { writeJSONResponseErr "result=>4078" "message=>Error loading file from URL"; die -q; }
+    else
+        ensureFileCanBeDownloaded $package_url;
+        $WGET --no-check-certificate --content-disposition --directory-prefix="${DOWNLOADS}" $package_url >> $ACTIONS_LOG 2>&1 || { writeJSONResponseErr "result=>4078" "message=>Error loading file from URL"; die -q; }
+        package_name="${DOWNLOADS}/$(ls ${DOWNLOADS})";
+        [ ! -s "$package_name" ] && {
+            set -f
+            rm -f "${package_name}";
+            set +f
+            writeJSONResponseErr "result=>4078" "message=>Error loading file from URL";
+            die -q;
+        }
+    fi
+}
+
+function deploy(){
     [ -f "$prestart_script" ] && $prestart_script
-    local crt_control="/opt/repo/bin/control";
+    local crt_control="${STACK_PATH}bin/control";
     if [[ -z "$package_url" || -z "$context" ]]
     then
-        echo "Wrong arguments for deploy" 1>&2;
-        exit 1;
+        writeJSONResponseErr "result=>4058" "message=>Wrong arguments for deploy" ; return 1;
     fi
-    _clearCache;
-    ensureFileCanBeDownloaded $package_url;
-    $WGET --no-check-certificate --content-disposition --directory-prefix=${DOWNLOADS} $package_url >> $ACTIONS_LOG 2>&1 || { writeJSONResponseErr "result=>4078" "message=>Error loading file from URL"; die -q; }
-    package_name=`ls ${DOWNLOADS}`;
+    [ -z "${WEBROOT}" ] && { writeJSONResponseErr "result=>4060" "message=>Deploy failed, see logs for details" ; return 1; }
+    getPackageName;
 
-    [ ! -s "$DOWNLOADS/$package_name" ] && {
-        rm -f ${DOWNLOADS}/${package_name};
-        writeJSONResponseErr "result=>4078" "message=>Error loading file from URL";
-        die -q;
-    }
+    stopServiceSilent ${SERVICE} ;
+    rm -rf "${WEBROOT}/*";
 
-    stopService ${SERVICE} > /dev/null 2>&1;
-    rm -rf ${WEBROOT}/*
-
-    unzip  -Z1 ${DOWNLOADS}/${package_name} |  grep -q "META-INF/MANIFEST.MF" && {
-    cp  ${DOWNLOADS}/${package_name} ${WEBROOT}/${package_name}; } ||  local jar_entry=$(unzip  -Z1 ${DOWNLOADS}/${package_name}   | grep ".jar\|.war\.ear" | head -1 );
+    unzip  -Z1 ${package_name} |  grep -q "META-INF/MANIFEST.MF" && {
+    cp  ${package_name} ${WEBROOT}/$(basename ${package_name}); } ||  local jar_entry=$(unzip  -Z1 ${package_name}   | grep ".jar\|.war\.ear" | head -1 );
         [ ! -z $jar_entry ]  && {
-        unzip -o "$DOWNLOADS/$package_name" -d "${WEBROOT}" 2>>$ACTIONS_LOG 1>/dev/null || writeJSONResponseErr "result=>4060" "message=>Application deployed with error";
+        unzip -o "$package_name" -d "${WEBROOT}" 2>>$ACTIONS_LOG 1>/dev/null || writeJSONResponseErr "result=>4060" "message=>Application deployed with error";
     }
     _clearCache;
     chown -R 700:700 "${WEBROOT}"
-    chown -R 700:700 "/opt/repo/logs"
     startService ${SERVICE} > /dev/null 2>&1;
     #writeJSONResponseOut "result=>0" "message=>Application deployed succesfully";
     echo
@@ -70,7 +80,7 @@ function _undeploy(){
 #        exit 1
 #    fi
     [ -f "$prestart_script" ] && $prestart_script
-    stopService ${SERVICE} > /dev/null 2>&1;
+    stopServiceSilent ${SERVICE};
 
     [ ! -z "${WEBROOT}" ] && rm -rf ${WEBROOT}/* && { writeJSONResponseOut  "result=>0" "message=>Application undeployed succesfully";  exit 0 ;}  || { writeJSONResponseErr "result=>4060" "message=>Undeploy failed"; exit 1; }
 
@@ -89,4 +99,3 @@ function describeRename(){
     echo "rename java context \n\t\t -n \t <new context> \n\t\t -o \t
 <old context>\n\t\t";
 }
-

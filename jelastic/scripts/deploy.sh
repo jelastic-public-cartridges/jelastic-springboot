@@ -29,15 +29,18 @@ function _clearCache(){
 
 function getPackageName() {
     if [ -f "$package_url" ]; then
-        package_name="$package_url";
+        package_name=$(basename "${package_url:7}")
+        package_path=$(dirname "${package_url:7}")
     elif [[ "${package_url}" =~ file://* ]]; then
-        package_name="${package_url:7}"
-        [ -f "$package_name" ] || { writeJSONResponseErr "result=>4078" "message=>Error loading file from URL"; die -q; }
+        package_name=$(basename "${package_url:7}")
+        package_path=$(dirname "${package_url:7}")
+        [ -f "${package_path}/${package_name}" ] || { writeJSONResponseErr "result=>4078" "message=>Error loading file from URL"; die -q; }
     else
         ensureFileCanBeDownloaded $package_url;
-        $WGET --no-check-certificate --content-disposition --directory-prefix="${DOWNLOADS}" $package_url >> $ACTIONS_LOG 2>&1 || { writeJSONResponseErr "result=>4078" "message=>Error loading file from URL"; die -q; }
-        package_name="${DOWNLOADS}/$(ls ${DOWNLOADS})";
-        [ ! -s "$package_name" ] && {
+        $WGET --no-check-certificate --content-disposition --directory-prefix="$DOWNLOADS" $package_url >> $ACTIONS_LOG 2>&1 || { writeJSONResponseErr "result=>4078" "message=>Error loading file from URL"; die -q; }
+        package_name="$(ls ${DOWNLOADS})";
+        package_path=${DOWNLOADS};
+        [ ! -s "${package_path}/${package_name}" ] && {
             set -f
             rm -f "${package_name}";
             set +f
@@ -55,15 +58,20 @@ function deploy(){
         writeJSONResponseErr "result=>4058" "message=>Wrong arguments for deploy" ; return 1;
     fi
     [ -z "${WEBROOT}" ] && { writeJSONResponseErr "result=>4060" "message=>Deploy failed, see logs for details" ; return 1; }
-    getPackageName;
+
+    local result=0;
+    local deploy_context='';
+    local deployDir="${DOWNLOADS}";
+    [ -d "$DOWNLOADS" ] || mkdir -p "$DOWNLOADS";
+    clearCache;
 
     stopServiceSilent ${SERVICE} ;
     rm -rf "${WEBROOT}/*";
 
-    unzip  -Z1 ${package_name} |  grep -q "META-INF/MANIFEST.MF" && {
-    cp  ${package_name} ${WEBROOT}/$(basename ${package_name}); } ||  local jar_entry=$(unzip  -Z1 ${package_name}   | grep ".jar\|.war\.ear" | head -1 );
+    unzip  -Z1 ${package_path}/${package_name} |  grep -q "META-INF/MANIFEST.MF" && {
+    /bin/cp  ${package_path}/${package_name} ${WEBROOT}/${package_name}; } ||  local jar_entry=$(unzip  -Z1 ${package_path}/${package_name}   | grep ".jar\|.war\.ear" | head -1 );
         [ ! -z $jar_entry ]  && {
-        unzip -o "$package_name" -d "${WEBROOT}" 2>>$ACTIONS_LOG 1>/dev/null || writeJSONResponseErr "result=>4060" "message=>Application deployed with error";
+        unzip -o "${package_path}/${package_name}" -d "${WEBROOT}" 2>>$ACTIONS_LOG 1>/dev/null || writeJSONResponseErr "result=>4060" "message=>Application deployed with error";
     }
     _clearCache;
     chown -R 700:700 "${WEBROOT}"

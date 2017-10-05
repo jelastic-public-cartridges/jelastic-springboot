@@ -64,6 +64,7 @@ function deploy(){
     local deployDir="${DOWNLOADS}";
     [ -d "$DOWNLOADS" ] || mkdir -p "$DOWNLOADS";
     _clearCache;
+    getPackageName;
 
     stopServiceSilent ${SERVICE} ;
     rm -rf "${WEBROOT}/*";

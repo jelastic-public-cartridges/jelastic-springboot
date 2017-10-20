@@ -77,5 +77,10 @@ then
     	JAVA_OPTS=$JAVA_OPTS" -XX:+UseCompressedOops"
 fi
 
+if [ -f /opt/repo/versions/1.x-2.x/conf/user_defined_variables.conf ]; then
+        USER_DEFINED_OPTS=$(cat /opt/repo/versions/1.x-2.x/conf/user_defined_variables.conf)
+        JAVA_OPTS=$JAVA_OPTS" $USER_DEFINED_OPTS";
+fi
+
 sed -i "s@export JAVA_OPTS=.*@export JAVA_OPTS=\"$JAVA_OPTS\"@" /opt/repo/versions/1.x-2.x/conf/variables.conf;
 export JAVA_OPTS

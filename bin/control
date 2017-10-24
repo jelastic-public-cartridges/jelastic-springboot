@@ -53,7 +53,7 @@ start() {
     chown -R 700:700 "/opt/repo/logs"
 
     [ ! -f "$JARFILE_FULLPATH" -a ! -L "$JARFILE_FULLPATH" ] && { echo "No application deployed"; return 0; }
-    cd $SPRINGBOOTAPP_HOME && $SPRINGBOOTAPP_JAVA -jar $JARFILE_NAME $JAVA_OPTS > $LOG 2>&1 &
+    cd $SPRINGBOOTAPP_HOME && $SPRINGBOOTAPP_JAVA $JAVA_OPTS -jar $JARFILE_NAME > $LOG 2>&1 &
 
     while { pid_of_spring_boot > /dev/null ; } &&
     ! pgrep java > $LOCK ; do

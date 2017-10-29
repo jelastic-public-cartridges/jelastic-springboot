@@ -23,3 +23,10 @@ fi
 
 #sed -i 's/$RUNAS/root/' /etc/rc.d/init.d/cartridge;
 chown -R 700:700 /opt/repo/ > /dev/null 2>&1
+
+JAVA_BINARIES=$(find /usr/java/* -name java) 
+
+for i in ${JAVA_BINARIES}
+do
+     setcap 'cap_net_bind_service=+ep' ${i}
+done

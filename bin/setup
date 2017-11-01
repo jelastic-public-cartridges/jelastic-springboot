@@ -21,6 +21,8 @@ fi
 
 [ -f "/opt/repo/.bash_profile" ] && cp /opt/repo/.bash_profile /opt/repo/home/;
 
+touch /opt/repo/versions/1.x-2.x/conf/user_defined_variables.conf
+
 #sed -i 's/$RUNAS/root/' /etc/rc.d/init.d/cartridge;
 chown -R 700:700 /opt/repo/ > /dev/null 2>&1
 

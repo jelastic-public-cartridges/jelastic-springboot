@@ -23,15 +23,3 @@ fi
 
 #sed -i 's/$RUNAS/root/' /etc/rc.d/init.d/cartridge;
 chown -R 700:700 /opt/repo/ > /dev/null 2>&1
-
-rpm -e --nodeps java6-jelastic java7-jelastic &>/dev/null
-
-echo -e "$(find /usr -name libjli.so -printf "%h\n")" > /etc/ld.so.conf.d/java.conf ; \
-ldconfig
-
-JAVA_BINARIES=$(find /usr/java/* -name java) 
-
-for i in ${JAVA_BINARIES}
-do
-     setcap 'cap_net_bind_service=+ep' ${i}
-done
